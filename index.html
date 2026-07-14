@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>רמזור המורכבות ושאלון עצמי - מפגש 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1E2761;
+    --ice: #CADCFC;
+    --teal: #0F6E56;
+    --teal-light: #E1F5EE;
+    --paper: #FAFAF8;
+    --ink: #23262E;
+    --muted: #6B6F7A;
+    --border: #E3E1DA;
+    --green: #3B6D11;
+    --green-bg: #EAF3DE;
+    --amber: #854F0B;
+    --amber-bg: #FAEEDA;
+    --red: #A32D2D;
+    --red-bg: #FCEBEB;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: 'Heebo', sans-serif; background: var(--paper); color: var(--ink); margin: 0; direction: rtl; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  header { background: var(--navy); color: white; padding: 2.5rem 1.5rem; text-align: center; }
+  header h1 { font-size: 25px; font-weight: 500; margin: 0 0 0.5rem; }
+  header p { font-size: 15px; color: var(--ice); margin: 0; font-weight: 300; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .tab-btn { flex: 1; background: none; border: none; padding: 14px 8px; font-family: 'Heebo', sans-serif; font-size: 15px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
+  .tab-btn.active { color: var(--navy); border-bottom-color: var(--teal); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; margin-bottom: 1.5rem; }
+  .card-label { font-size: 12px; color: var(--teal); font-weight: 700; margin-bottom: 0.6rem; }
+  .card h2 { font-size: 19px; font-weight: 500; margin: 0 0 0.75rem; }
+  .card p.desc { font-size: 14.5px; color: var(--muted); line-height: 1.7; margin: 0 0 1.5rem; }
+
+  .progress { font-size: 13px; color: var(--muted); margin-bottom: 1rem; }
+  .case-card { background: #FCFCFB; border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.25rem; }
+  .stage-label { font-size: 11.5px; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.02em; }
+  .case-text { font-size: 15.5px; line-height: 1.7; margin: 0 0 1.25rem; }
+  .context-block { border-right: 3px solid var(--teal); padding-right: 14px; margin: 0 0 1.25rem; display: none; }
+  .context-block.show { display: block; }
+  .context-block .case-text { margin-bottom: 0; }
+  .reveal-btn {
+    width: 100%; background: var(--navy); color: white; border: none; border-radius: 8px;
+    padding: 13px; font-family: 'Heebo', sans-serif; font-size: 14.5px; font-weight: 500; cursor: pointer;
+  }
+  .reveal-hint { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .sort-buttons { display: none; gap: 10px; }
+  .sort-buttons.show { display: flex; }
+  .sort-btn { flex: 1; border: none; border-radius: 8px; padding: 12px; font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .sort-btn.green { background: var(--green-bg); color: var(--green); }
+  .sort-btn.amber { background: var(--amber-bg); color: var(--amber); }
+  .sort-btn.red { background: var(--red-bg); color: var(--red); }
+  .sort-btn:hover { filter: brightness(0.95); }
+  .feedback { margin-top: 1rem; padding: 1rem; border-radius: 8px; font-size: 14px; line-height: 1.65; display: none; }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--green-bg); color: var(--green); }
+  .feedback.wrong { background: var(--red-bg); color: var(--red); }
+  .feedback b { display: block; margin-bottom: 4px; }
+  .nav-row { display: flex; justify-content: space-between; margin-top: 1rem; }
+  .nav-btn { background: var(--navy); color: white; border: none; border-radius: 8px; padding: 10px 20px; font-family: 'Heebo', sans-serif; font-size: 14px; cursor: pointer; }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .summary { text-align: center; padding: 2rem 1rem; }
+  .summary .big { font-size: 30px; font-weight: 500; color: var(--navy); margin-bottom: 0.5rem; }
+
+  .q-block { margin-bottom: 1.75rem; }
+  .q-block .style-name { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 4px; }
+  .q-block .statement { font-size: 15px; line-height: 1.6; margin-bottom: 10px; }
+  .scale { display: flex; align-items: center; gap: 6px; }
+  .scale .lbl { font-size: 11.5px; color: var(--muted); width: 80px; }
+  .scale input[type=range] { flex: 1; }
+  .scale .val { font-size: 13px; font-weight: 500; width: 18px; text-align: center; }
+  .result-box { background: var(--teal-light); border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem; display: none; }
+  .result-box.show { display: block; }
+  .result-box h3 { margin: 0 0 8px; font-size: 16px; color: #0a5443; }
+  .result-box p { margin: 0; font-size: 14px; line-height: 1.7; color: #0a5443; }
+  .privacy-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .submit-btn { background: var(--teal); color: white; border: none; border-radius: 8px; padding: 11px 22px; font-family: 'Heebo', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>מקרים מורכבים בהדרכה - רמזור המורכבות</h1>
+  <p>קודם שאלה, אחר כך החלטה</p>
+</header>
+
+<div class="wrap">
+
+  
+
+  <div class="panel active" id="panel-sort">
+    <div class="card">
+      <div class="card-label">מקרים מורכבים · תרגול בשני שלבים</div>
+      <h2>קודם שאלה, אחר כך החלטה</h2>
+      <p class="desc">בכל מקרה תראו קודם רק את ההתנהגות הגלויה. לפני שממשיכים, עצרו ושאלו את עצמכם מה עוד הייתם רוצים לדעת. רק אחרי חשיפת ההקשר תתבקשו למיין את המקרה לרמזור: אור ירוק (מורכבות שמדרבנת למידה), אור צהוב (מורכבות שדורשת תיווך), או אור אדום (מורכבות חוסמת שמחייבת הצבת גבול).</p>
+
+      <div class="progress" id="progressLbl"></div>
+
+      <div class="case-card" id="caseCard">
+        <div class="stage-label">שלב 1 · ההתנהגות הגלויה</div>
+        <p class="case-text" id="caseBehavior"></p>
+        <button class="reveal-btn" id="revealBtn">מה עוד הייתי רוצה לדעת? חשיפת ההקשר</button>
+        <div class="reveal-hint" id="revealHint">עצרו לרגע וחשבו על שאלה אחת לפחות לפני הלחיצה</div>
+        <div class="context-block" id="contextBlock">
+          <div class="stage-label">שלב 2 · ההקשר שנחשף</div>
+          <p class="case-text" id="caseContext"></p>
+        </div>
+        <div class="sort-buttons" id="sortButtons">
+          <button class="sort-btn green" data-color="green">אור ירוק</button>
+          <button class="sort-btn amber" data-color="amber">אור צהוב</button>
+          <button class="sort-btn red" data-color="red">אור אדום</button>
+        </div>
+        <div class="feedback" id="feedbackBox"></div>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="prevBtn" disabled>הקודם</button>
+        <button class="nav-btn" id="nextBtn" disabled>הבא</button>
+      </div>
+
+      <div class="summary" id="summaryBox" style="display:none;">
+        <div class="big" id="summaryScore"></div>
+        <div style="color: var(--muted); font-size: 14px;">מיונים נכונים מתוך תשעה</div>
+        <button class="nav-btn" style="margin-top: 1rem;" id="restartBtn">להתחיל מחדש</button>
+      </div>
+    </div>
+  </div>
+
+  
+
+</div>
+
+<script>
+  
+
+  const cases = [
+    {
+      behavior: 'סטודנט ניגש למדריכה ומספר שטעה בתיעוד קליני: רשם טווח תפקוד שגוי בדוח על מטופל.',
+      context: 'מתברר שהסטודנט זיהה את הטעות בעצמו עוד באותו יום, בדק שלא נגרם נזק, והגיע ביוזמתו כדי לברר איך מתקנים ואיך נמנעים מטעות דומה בעתיד.',
+      answer: 'green',
+      why: 'טעות מקצועית קטנה שהסטודנט זיהה בעצמו ופנה ביוזמתו היא בדיוק סוג המורכבות שמדרבנת למידה. שימו לב כמה המיון השתנה בין השלב שבו ידענו רק על הטעות לשלב שבו הבנו את היוזמה שמאחורי הפנייה. המענה: הדרכה רפלקטיבית ועידוד, לא הצבת גבול.'
+    },
+    {
+      behavior: 'סטודנטית מבטלת את פגישת ההדרכה השבועית בפעם השנייה ברצף, בהודעה קצרה ובלי הסבר.',
+      context: 'בשיחה מתברר שאחד המטופלים שהיא מלווה הביע בפגישה האחרונה מחשבות אובדניות ברורות, והיא לא ידעה איך להביא את זה להדרכה ולכן נמנעה ממנה.',
+      answer: 'red',
+      why: 'מה שנראה תחילה כהתחמקות מהדרכה מתגלה כמצב של סיכון אובדני אצל מטופל. זו מורכבות חוסמת ומסכנת: נדרשות פעולה מיידית לפי נהלי המסגרת, תיעוד קפדני ומעורבות מדריכות בית הספר. החמלה כלפי הסטודנטית שנשארה עם זה לבד חשובה, אך היא אינה דוחה את הפעולה הנדרשת אף לא ביום אחד.'
+    },
+    {
+      behavior: 'סטודנט מגיע באיחור בשבועות האחרונים, נראה מפוזר בפגישות עם מטופלים ושוכח משימות שסוכמו.',
+      context: 'כששואלים אותו על כך בפתיחות, הוא משתף שהוא בעיצומו של משבר אישי בבית, הוריו בהליך גירושין והוא נאלץ לעבוד במשמרות לילה כדי לתמוך כלכלית.',
+      answer: 'amber',
+      why: 'משבר אישי של הסטודנט הוא מורכבות שדורשת תיווך: שיחה פתוחה, חזרה לחוזה ההדרכה, התאמות זמניות אם ניתן, והתייעצות עם מדריכות בית הספר לפי הצורך. לא מדובר במורכבות חוסמת כל עוד אין פגיעה במטופלים, אך גם לא במורכבות שנפתרת מעצמה.'
+    },
+    {
+      behavior: 'לוח הזמנים של הסטודנטית השתבש כמעט לחלוטין בשבועיים האחרונים והיא מדלגת על חלק מההתנסויות שתוכננו.',
+      context: 'מקום ההכשרה נמצא בעיצומה של שביתה ממושכת של עובדי המנהל, מחלקות שלמות עובדות במתכונת חירום, וההתנסויות שבוטלו פשוט לא התקיימו כלל.',
+      answer: 'amber',
+      why: 'זו מורכבות שמקורה במקום ההכשרה עצמו ולא בסטודנטית. המענה הוא תיווך: התאמת ציפיות לתקופה, יצירת חלופות התנסות, ועדכון מדריכות בית הספר על הפער שנוצר מול דרישות ההכשרה.'
+    },
+    {
+      behavior: 'מדריכה מגלה במקרה שהסטודנט שלה פרסם ברשת החברתית פוסט על יום עבודה מרגש שהיה לו.',
+      context: 'בקריאת הפוסט מתברר שהוא כולל פרטים מזהים על מטופלת, שם המחלקה, גילה ואבחנתה הקלינית, גם אם מתוך כוונה חיובית לשתף חוויה מקצועית משמעותית.',
+      answer: 'red',
+      why: 'פגיעה בחיסיון המטופלת היא מורכבות חוסמת, ללא קשר לכוונה הטובה. נדרשות הסרה מיידית של הפוסט, הצבת גבול ברור, תיעוד ועדכון מדריכות בית הספר. אפשר ואף רצוי להחזיק בו זמנית הבנה שהמניע היה התלהבות מקצועית, אך זה אינו משנה את סיווג המקרה.'
+    },
+    {
+      behavior: 'סטודנטית מתעקשת בפגישת ההדרכה שגישת הטיפול שהמדריכה מנחה אותה לפיה "מיושנת", ומצטטת מאמרים שקראה בקורס עדכני באוניברסיטה.',
+      context: 'מתברר שהסטודנטית חוותה הצלחה משמעותית עם מטופל כשניסתה טכניקה מהגישה החדשה, והביקורת שלה נובעת מרצון אמיתי להביא את מה שלמדה אל השטח, לא מזלזול במדריכה.',
+      answer: 'green',
+      why: 'עימות מקצועי על גישות טיפול, כשמאחוריו סקרנות ומחויבות למטופלים, הוא מורכבות שמדרבנת למידה עבור שני הצדדים. זו הזדמנות לדיאלוג מקצועי אמיתי ואף להתעדכנות של המדריכה עצמה. שימו לב איך התנהגות שנחוותה תחילה כהתנגדות מתגלה כתהליך של בניית זהות מקצועית.'
+    },
+    {
+      behavior: 'סטודנט נמנע באופן עקבי מלטפל במטופלים מבוגרים במחלקה, ומוצא שוב ושוב סיבות להחליף מקרים עם סטודנטית אחרת.',
+      context: 'בשיחה רגישה מתברר שסבו של הסטודנט נפטר לאחרונה לאחר אשפוז ממושך במחלקה דומה, וכל כניסה לחדר של מטופל מבוגר מציפה אותו רגשית עד כדי קושי לתפקד.',
+      answer: 'amber',
+      why: 'הימנעות שמקורה באבל טרי היא מורכבות שדורשת תיווך רגיש: הכרה ברגש, בחינה הדרגתית של חזרה לעבודה עם האוכלוסייה, ושקילת ליווי נוסף. התעלמות ממנה או לחילופין ויתור מוחלט על תחום ההתנסות, שניהם יפגעו בבניית הזהות המקצועית שלו.'
+    },
+    {
+      behavior: 'סטודנטית מבקשת מהמדריכה שלה לצאת איתה לקפה אחרי שעות העבודה, ושולחת לה הודעות אישיות בשעות הערב על נושאים שאינם קשורים להכשרה.',
+      context: 'מתברר שהסטודנטית עברה לעיר לבד לצורך ההכשרה, חשה בדידות עמוקה, ורואה במדריכה דמות קרובה יחידה. אין בפניות תוכן בעייתי מעבר לחיפוש אחר קשר.',
+      answer: 'amber',
+      why: 'טשטוש גבולות בקשר ההדרכה הוא מורכבות שדורשת תיווך: שיחה מכבדת שמבהירה את גבולות הקשר המקצועי לצד הכרה אמיתית בבדידות, והכוונה למקורות תמיכה מתאימים. הצבת גבול נוקשה ומביישת עלולה לשחזר עבורה דחייה, אך היעדר גבול יפגע בתפקיד ההדרכתי.'
+    },
+    {
+      behavior: 'במהלך ביקורת שגרתית, מדריכה מגלה שהסטודנט שלה כתב בדוח התקדמות שביצע התערבות מסוימת עם מטופל, למרות שהיא יודעת בוודאות שההתערבות לא בוצעה.',
+      context: 'כשהיא שואלת אותו על כך, הסטודנט מודה שכתב את הדוח מראש כי היה בטוח שיספיק לבצע את ההתערבות, ואז המטופל שוחרר במפתיע. הוא לא תיקן את הדוח כי חשש שזה ייראה רע.',
+      answer: 'red',
+      why: 'תיעוד כוזב ברשומה קלינית הוא מורכבות חוסמת שנוגעת לאמינות מקצועית, גם כשההסבר אנושי ומובן. נדרשים תיקון מיידי של הרשומה, הצבת גבול חד משמעי ועדכון מדריכות בית הספר. ההבנה של הפחד שמאחורי ההתנהגות חשובה להמשך תהליך ההדרכה, אך אינה משנה את חומרת האירוע עצמו.'
+    }
+  ];
+
+  let idx = 0;
+  let answers = new Array(cases.length).fill(null);
+  let revealed = new Array(cases.length).fill(false);
+
+  const caseBehavior = document.getElementById('caseBehavior');
+  const caseContext = document.getElementById('caseContext');
+  const contextBlock = document.getElementById('contextBlock');
+  const revealBtn = document.getElementById('revealBtn');
+  const revealHint = document.getElementById('revealHint');
+  const sortButtons = document.getElementById('sortButtons');
+  const feedbackBox = document.getElementById('feedbackBox');
+  const progressLbl = document.getElementById('progressLbl');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const caseCard = document.getElementById('caseCard');
+  const summaryBox = document.getElementById('summaryBox');
+
+  function renderCase() {
+    summaryBox.style.display = 'none';
+    caseCard.style.display = 'block';
+    document.querySelector('.nav-row').style.display = 'flex';
+    progressLbl.textContent = 'מקרה ' + (idx + 1) + ' מתוך ' + cases.length;
+    caseBehavior.textContent = cases[idx].behavior;
+    caseContext.textContent = cases[idx].context;
+    feedbackBox.className = 'feedback';
+    feedbackBox.textContent = '';
+    prevBtn.disabled = idx === 0;
+
+    if (revealed[idx]) {
+      revealBtn.style.display = 'none';
+      revealHint.style.display = 'none';
+      contextBlock.classList.add('show');
+      sortButtons.classList.add('show');
+    } else {
+      revealBtn.style.display = 'block';
+      revealHint.style.display = 'block';
+      contextBlock.classList.remove('show');
+      sortButtons.classList.remove('show');
+    }
+
+    nextBtn.disabled = answers[idx] === null;
+    if (answers[idx] !== null) showFeedback(answers[idx]);
+  }
+
+  revealBtn.addEventListener('click', () => {
+    revealed[idx] = true;
+    revealBtn.style.display = 'none';
+    revealHint.style.display = 'none';
+    contextBlock.classList.add('show');
+    sortButtons.classList.add('show');
+  });
+
+  function showFeedback(chosenColor) {
+    const c = cases[idx];
+    const correct = chosenColor === c.answer;
+    feedbackBox.className = 'feedback show ' + (correct ? 'correct' : 'wrong');
+    const label = { green: 'אור ירוק', amber: 'אור צהוב', red: 'אור אדום' };
+    feedbackBox.innerHTML = '<b>' + (correct ? 'מיון נכון - ' + label[c.answer] : 'המיון הנכון הוא ' + label[c.answer]) + '</b>' + c.why;
+    nextBtn.disabled = false;
+  }
+
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (answers[idx] !== null) return;
+      answers[idx] = btn.dataset.color;
+      showFeedback(btn.dataset.color);
+    });
+  });
+
+  prevBtn.addEventListener('click', () => { idx--; renderCase(); });
+  nextBtn.addEventListener('click', () => {
+    if (idx < cases.length - 1) { idx++; renderCase(); }
+    else {
+      const correctCount = answers.filter((a, i) => a === cases[i].answer).length;
+      caseCard.style.display = 'none';
+      document.querySelector('.nav-row').style.display = 'none';
+      summaryBox.style.display = 'block';
+      document.getElementById('summaryScore').textContent = correctCount + ' / ' + cases.length;
+    }
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    idx = 0;
+    answers = new Array(cases.length).fill(null);
+    revealed = new Array(cases.length).fill(false);
+    renderCase();
+  });
+
+  renderCase();
+
+  
+</script>
+
+</body>
+</html>
